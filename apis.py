@@ -1,5 +1,5 @@
 # http://oauth.vk.com/authorize?client_id=6334949&scope=589842&display=mobile&response_type=token
-CLEVER = ""
+CLEVER = "1"
 # https://xml.yandex.ru/settings/
 YANDEX_LOGIN = ""
 YANDEX_KEY = ""
