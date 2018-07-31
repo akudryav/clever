@@ -48,7 +48,7 @@ def count_found_google(answers, question):
     found_g = 0
     for ans in answers:
         pattern = ans['text']+' '+question
-        result_g = google.cse().list(q=pattern, cx='000498810780458689635:kaul85mn8-8').execute()
+        result_g = google.cse().list(q=pattern, cx=apis.GOOGLE_ID).execute()
         if int(result_g["queries"]["request"][0]["totalResults"]) > found_g:
             maxid_g = ans['id']
             found_g = int(result_g["queries"]["request"][0]["totalResults"])
@@ -80,7 +80,27 @@ def new_question(event):
 
 def main():
     #event = json.loads('{     "type":"sq_question",   "owner_id":-162894513,   "video_id":456239000,   "question":{        "id":11,      "text":"Кто живёт с пятью сердцами?",      "answers":[           {              "id":0,            "text":"Зеленая лягушка"         },         {              "id":1,            "text":"Дождевой червь"         },         {              "id":2,            "text":"Синий кит"         }      ],      "time":null,      "number":1   },   "version":2}')
+    # тестируем работу поисковиков
+    try:
+        test = yandex_grep("test")
+    except Exception as e:
+        print("Ошибка работы с Яндексом:")
+        print (e)
+        return
+
+    try:
+        test = google_grep("test")
+    except Exception as e:
+        print("Ошибка работы с Гуглом:")
+        print (e)
+        return
+
+    print("Тест поисковиков пройден успешно. Ждем вопросов.")
     lp.game_waiting()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Выход из программы")
+        pass
