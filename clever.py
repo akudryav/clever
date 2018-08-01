@@ -67,7 +67,7 @@ def new_question(event):
 
 @lp.right_answer_handler()
 def new_answer(event):
-    print("Правильный ответ: "+str(event["question"]["right_answer_id"]))
+    print("Правильный ответ: "+str(event["question"]["right_answer_id"]+1))
 
 def main():
     #event = json.loads('{     "type":"sq_question",   "owner_id":-162894513,   "video_id":456239000,   "question":{        "id":11,      "text":"Кaкую из этих прoфеcсий кyкла Бaрби «освoила» рaньше, чeм остaльные?",      "answers":[           {              "id":0,            "text":"Учитeльницa"         },         {              "id":1,            "text":"Няня"         },         {              "id":2,            "text":"Мeдсeстра"         }      ],      "time":null,      "number":1   },   "version":2}')
