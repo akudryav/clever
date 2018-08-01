@@ -10,7 +10,7 @@ from googleapiclient.discovery import build
 import json
 import apis
 # вопросительные слова для выкидывания из начала вопроса при поиске вместе с ответами
-qwords = ["Что", "Чем", "Где", "Когда", "Кто", "Кем", "Кому", "Почему", "Зачем", "Как", "Какой", "Кaкaя", "Какое", "Каким"]
+qwords = ["Что", "Чем", "Где", "Когда", "Кто", "Кем", "Кому", "Почему", "Зачем", "Как", "Какой", "Какая", "Какие", "Какое", "Какому", "Каким", "Чей", "Сколько", "Куда", "Откуда"]
 api = CleverApi(apis.CLEVER)
 lp = CleverLongPoll(api)
 
@@ -42,9 +42,7 @@ def count_frequency(question, answers):
     yandex_items = yandex_grep(question)
     google_items = google_grep(question)
     yandex_count = count_answers(answers, yandex_items)
-    print(yandex_items)
     google_count = count_answers(answers, google_items)
-    print(google_items)
     return [x + y for x, y in zip(yandex_count, google_count)]
 
 @lp.question_handler()
@@ -60,9 +58,8 @@ def new_question(event):
             phrase = rest.replace('?','')
         else:
             phrase = event["question"]["text"].replace('?','')
-        # выполняем поиск вместе с вариантами ответов
+        # выполняем поиск вместе с вариантами ответов через оператор ИЛИ
         pattern = "|".join([x['text'] for x in event["question"]["answers"]])+' '+phrase
-        print(pattern)
         total_count = count_frequency(pattern, event["question"]["answers"])
    
     print(total_count)
