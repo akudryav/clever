@@ -11,12 +11,32 @@ from googleapiclient.discovery import build
 import json
 import apis
 # вопросительные слова для выкидывания из начала вопроса при поиске вместе с ответами
-qwords = ["Что", "Чем", "Где", "Когда", "Кто", "Кем", "Кому", "Почему", "Зачем", "Как", "Какой", "Какая", "Какие", "Какое", "Какому", "Каким", "Чей", "Сколько", "Куда", "Откуда"]
+qwords = ["Что", "Чем", "Где", "Когда", "Кто", "Кем", "Кому", "Почему", "Зачем", "Как", "Какой", "Какая", "Какие", "Какое", "Какому", "Каким", "Кaкую", "Чей", "Сколько", "Куда", "Откуда"]
 api = CleverApi(apis.CLEVER)
 lp = CleverLongPoll(api)
+# словарь для перевода числительных 0-9
+units = (
+    u'ноль', u'один',  u'два',
+    u'три', u'четыре', u'пять',
+    u'шесть', u'семь', u'восемь', u'девять'
+)
 
 yandex = Yandex(api_user=apis.YANDEX_LOGIN, api_key=apis.YANDEX_KEY)
 google = build("customsearch", "v1", developerKey=apis.GOOGLE_KEY, cache_discovery=False)
+
+# получение текстового названия цифры
+def digit_name(s):
+    # проверка на число от 0 до 9
+    try:
+        n = int(s)
+        if n >= 0 and n <10:
+            return units[n]
+        return s
+    except ValueError:
+        return s
+# предварительная обработка ответов
+def process_answers(answers):
+    return [digit_name(x['text']) for x in answers]
 # получение результатов поиска яндекс
 def yandex_grep(pattern):
     results = yandex.search(pattern)
@@ -32,10 +52,10 @@ def google_grep(pattern):
 # подсчет числа ответов в выдаче (снипетах)
 def count_answers(answers, snippets):
     res = [0, 0, 0]
-    for ans in answers:
+    for idx, ans in enumerate(answers):
         for snip in snippets:
-            if ans['text'].lower() in snip.lower():
-                res[ans['id']] += 1
+            if ans.lower() in snip.lower():
+                res[idx] += 1
     return res
 
 # Выполняем поиск и Суммируем число ответов по Яндексу и Гуглу вместе 
@@ -49,8 +69,9 @@ def count_frequency(question, answers):
 @lp.question_handler()
 def new_question(event):
     print(event["question"]["text"])
-    print([x['text'] for x in event["question"]["answers"]])
-    total_count = count_frequency(event["question"]["text"], event["question"]["answers"])
+    answers = process_answers(event["question"]["answers"])
+    print(answers)
+    total_count = count_frequency(event["question"]["text"], answers)
     #если обычный подсчет не помог 
     if total_count == [0, 0, 0]:
         # убираем из вопроса первое вопросительное слово
@@ -60,8 +81,8 @@ def new_question(event):
         else:
             phrase = event["question"]["text"].replace('?','')
         # выполняем поиск вместе с вариантами ответов через оператор ИЛИ
-        pattern = "|".join([x['text'] for x in event["question"]["answers"]])+' '+phrase
-        total_count = count_frequency(pattern, event["question"]["answers"])
+        pattern = "|".join(answers)+' '+phrase
+        total_count = count_frequency(pattern, answers)
    
     print(total_count)
 
@@ -70,7 +91,7 @@ def new_answer(event):
     print("Правильный ответ: "+str(event["question"]["right_answer_id"]+1))
 
 def main():
-    #event = json.loads('{     "type":"sq_question",   "owner_id":-162894513,   "video_id":456239000,   "question":{        "id":11,      "text":"Кaкую из этих прoфеcсий кyкла Бaрби «освoила» рaньше, чeм остaльные?",      "answers":[           {              "id":0,            "text":"Учитeльницa"         },         {              "id":1,            "text":"Няня"         },         {              "id":2,            "text":"Мeдсeстра"         }      ],      "time":null,      "number":1   },   "version":2}')
+    #event = json.loads('{     "type":"sq_question",   "owner_id":-162894513,   "video_id":456239000,   "question":{        "id":11,      "text":"Сколько в Москве холмов?",      "answers":[           {              "id":0,            "text":"11"         },         {              "id":1,            "text":"2"         },         {              "id":2,            "text":"7"         }      ],      "time":null,      "number":1   },   "version":2}')
     # тестируем работу поисковиков
     try:
         test = yandex_grep("test")
