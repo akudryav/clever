@@ -27,6 +27,8 @@ google = build("customsearch", "v1", developerKey=apis.GOOGLE_KEY, cache_discove
 # получение текстового названия цифры
 def digit_name(s):
     # проверка на число от 0 до 9
+    if len(s) > 1: 
+        return s
     try:
         n = int(s)
         if n >= 0 and n <10:
